@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 typedef struct avp
 {
 	int info;
@@ -9,8 +10,9 @@ typedef struct avp
 
 TAVP *busca(int ele, TAVP *a)
 {
-	if(!a || a->info == ele) return a;
-	if(a->info<ele) return busca(ele,a->esq);
+	if(!a)return NULL;
+	if(ele == a->info) return a;
+	if(a->info < ele) return busca(ele,a->esq);
 	else return busca(ele,a->dir);
 }
 TAVP *obtemPai(TAVP *a)
@@ -19,19 +21,25 @@ TAVP *obtemPai(TAVP *a)
 }
 
 
-TAVP *RSE(TAVP *a)
+TAVP *RSE(TAVP *a, TAVP *novoPai)
 {
 	TAVP *novo = a->dir;
 	a->dir = novo->esq;
 	novo->esq = a;
+	novo->cor = a->cor;
+	novo->pai = novoPai;
+	a->cor = 'v';
 	return novo;
 }
 
-TAVP *RSD(TAVP *a)
+TAVP *RSD(TAVP *a, TAVP *novoPai)
 {
 	TAVP *novo = a->esq;
 	a->esq = novo->dir;
 	novo->dir = a;
+	novo->cor = a->cor;
+	novo->pai = novoPai;
+	a->cor = 'v';
 	return novo;
 }
 
@@ -95,11 +103,12 @@ TAVP *corr_ins(TAVP *a, TAVP *z)
 	return a;
 }
 
-TAVP *insere(TAVP *a, int elem)
+TAVP* insere(TAVP *a, int elem)
 {
+	//caso haja o elemento na lista, retorne a propria arvore
 	if(busca(elem,a))return a;
 	TAVP *novo = (TAVP*)malloc(sizeof(TAVP));
-	novo -> info = elem;
+	novo->info = elem;
 	novo->esq=novo->dir=NULL;
 	if(!a)
 	{
@@ -120,13 +129,34 @@ TAVP *insere(TAVP *a, int elem)
 	novo->pai = w;
 	novo->cor='v';
 	a=corr_ins(a,novo);
-	return novo;
+	return a;
+}
+
+
+
+void imprime_aux(TAVP *a, int andar){
+  if(a){
+      int j;
+      imprime_aux(a->esq,andar+1);
+      for(j=0; j<=andar; j++) printf("   ");
+      printf("%d\n", a->info);
+      imprime_aux(a->dir,andar+1);
+  }
+}
+
+void imprime(TAVP *a){
+  imprime_aux(a, 0);
 }
 
 int main(void)
 {
-	int p;
-	scanf("%d",&p);
-	printf("%d",p);
+	int p = 0;
+	TAVP *a = NULL;
+	do
+	{
+		scanf("%d",&p);
+		a = insere(a,p);
+	}while(p != 0);
+	imprime(a);
 	return 0;
 }
