@@ -1,29 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct avp
+typedef struct aluno
 {
-	int info;
-	char cor;
-	struct avp *pai,*esq,*dir;
-}TAVP;
+	int mat;
+	float cr;
+	char nome[81], cor;
+	struct aluno *pai,*esq,*dir;
+}TAluno;
 
-TAVP *busca(int ele, TAVP *a)
+TAluno *busca(int ele, TAluno *a)
 {
 	if(!a)return NULL;
-	if(ele == a->info) return a;
-	if(a->info < ele) return busca(ele,a->esq);
+	if(ele == a->mat) return a;
+	if(a->mat < ele) return busca(ele,a->esq);
 	else return busca(ele,a->dir);
 }
-TAVP *obtemPai(TAVP *a)
+TAluno *obtemPai(TAluno *a)
 {
 	if(a)return a->pai;
 }
 
 
-TAVP *RSE(TAVP *a, TAVP *novoPai)
+TAluno *RSE(TAluno *a, TAluno *novoPai)
 {
-	TAVP *novo = a->dir;
+	TAluno *novo = a->dir;
 	a->dir = novo->esq;
 	novo->esq = a;
 	novo->cor = a->cor;
@@ -32,9 +33,9 @@ TAVP *RSE(TAVP *a, TAVP *novoPai)
 	return novo;
 }
 
-TAVP *RSD(TAVP *a, TAVP *novoPai)
+TAluno *RSD(TAluno *a, TAluno *novoPai)
 {
-	TAVP *novo = a->esq;
+	TAluno *novo = a->esq;
 	a->esq = novo->dir;
 	novo->dir = a;
 	novo->cor = a->cor;
@@ -43,9 +44,9 @@ TAVP *RSD(TAVP *a, TAVP *novoPai)
 	return novo;
 }
 
-TAVP *corr_ins(TAVP *a, TAVP *z)
+TAluno *corr_ins(TAluno *a, TAluno *z)
 {
-	TAVP *aux = z, *pai = obtemPai(aux), *avo = obtemPai(pai),*tio;
+	TAluno *aux = z, *pai = obtemPai(aux), *avo = obtemPai(pai),*tio;
 	while(aux && aux != a && pai->cor=='v' && avo)
 	{
 		if(pai == avo->esq)
@@ -103,12 +104,12 @@ TAVP *corr_ins(TAVP *a, TAVP *z)
 	return a;
 }
 
-TAVP* insere(TAVP *a, int elem)
+TAluno* insere(TAluno *a, int elem)
 {
 	//caso haja o elemento na lista, retorne a propria arvore
 	if(busca(elem,a))return a;
-	TAVP *novo = (TAVP*)malloc(sizeof(TAVP));
-	novo->info = elem;
+	TAluno *novo = (TAluno*)malloc(sizeof(TAluno));
+	novo->mat = elem;
 	novo->esq=novo->dir=NULL;
 	if(!a)
 	{
@@ -116,14 +117,14 @@ TAVP* insere(TAVP *a, int elem)
 		novo->pai=NULL;
 		return novo;
 	}
-	TAVP *x=a,*w;
+	TAluno *x=a,*w;
 	while(x)
 	{
 		w = x;
-		if(x->info<elem)x=x->dir;
+		if(x->mat<elem)x=x->dir;
 		else x=x->esq;
 	}
-	if(elem < w->info)
+	if(elem < w->mat)
 		w->esq = novo;
 	else w->dir = novo;
 	novo->pai = w;
@@ -132,29 +133,35 @@ TAVP* insere(TAVP *a, int elem)
 	return a;
 }
 
+TAluno *irmao(TAluno *a)
+{
+	if(a == a->pai->esq)
+		return a->pai->dir;
+	return a->pai->esq;
+}
 
-
-void imprime_aux(TAVP *a, int andar){
+void imprime_aux(TAluno *a, int andar){
   if(a){
       int j;
       imprime_aux(a->esq,andar+1);
       for(j=0; j<=andar; j++) printf("   ");
-      printf("%d\n", a->info);
+      printf("%d %c\n", a->mat,a->cor);
       imprime_aux(a->dir,andar+1);
   }
 }
 
-void imprime(TAVP *a){
+void imprime(TAluno *a){
   imprime_aux(a, 0);
 }
 
 int main(void)
 {
 	int p = 0;
-	TAVP *a = NULL;
+	TAluno *a = NULL;
 	do
 	{
 		scanf("%d",&p);
+		imprime(a);
 		a = insere(a,p);
 	}while(p != 0);
 	imprime(a);
