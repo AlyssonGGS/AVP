@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 typedef struct aluno
 {
 	int mat;
@@ -13,7 +13,7 @@ TAluno *busca(int ele, TAluno *a)
 {
 	if(!a)return NULL;
 	if(ele == a->mat) return a;
-	if(a->mat < ele) return busca(ele,a->esq);
+	if(a->mat > ele) return busca(ele,a->esq);
 	else return busca(ele,a->dir);
 }
 TAluno *obtemPai(TAluno *a)
@@ -21,27 +21,57 @@ TAluno *obtemPai(TAluno *a)
 	if(a)return a->pai;
 }
 
-
-TAluno *RSE(TAluno *a, TAluno *novoPai)
+void mudaCR(TAluno *a,int mat, float novoCR)
 {
-	TAluno *novo = a->dir;
-	a->dir = novo->esq;
-	novo->esq = a;
-	novo->cor = a->cor;
-	novo->pai = novoPai;
-	a->cor = 'v';
-	return novo;
+    TAluno *x = busca(mat,a);
+    if(x)x->cr = novoCR;
+    else{printf("Aluno não encontrado");}
 }
 
-TAluno *RSD(TAluno *a, TAluno *novoPai)
+void mudaNome(TAluno *a, int mat, char novoNome[80])
 {
-	TAluno *novo = a->esq;
-	a->esq = novo->dir;
-	novo->dir = a;
-	novo->cor = a->cor;
-	novo->pai = novoPai;
-	a->cor = 'v';
-	return novo;
+    TAluno *x = busca(mat,a);
+    if(x)strcpy(x->nome,novoNome);
+    else{printf("Aluno não encontrado");}
+}
+
+void RSE(TAluno *a, TAluno **arvore)
+{
+    TAluno *y = a->dir;
+    a->dir = y->esq;
+    if(y->esq)
+    {
+        y->esq->pai = a;
+    }
+    y->pai = a->pai;
+    if(!a->pai)
+        *arvore = y;
+    else
+    {
+        if(a == a->pai->esq)
+            a->pai->esq = y;
+        else a->pai->dir = y;
+    }
+    y->esq = a;
+    a->pai = y;
+}
+void RSD(TAluno *a, TAluno **arvore)
+{
+    TAluno *y = a->esq;
+    a->esq = y->dir;
+    if(y->dir)
+        y->dir->pai = a;
+    y->pai = a->pai;
+    if(!a->pai)
+        *arvore = y;
+    else
+    {
+        if(a == a->pai->dir)
+            a->pai->dir = y;
+        else a->pai->esq = y;
+    }
+    y->dir = a;
+    a->esq = y;
 }
 
 TAluno *corr_ins(TAluno *a, TAluno *z)
@@ -65,13 +95,13 @@ TAluno *corr_ins(TAluno *a, TAluno *z)
 				if(aux==pai->dir)
 				{
 					aux = pai;
-					a = RSE(a,aux);
+					RSE(aux,&a);
 					pai = obtemPai(aux);
 					avo = obtemPai(pai);
 				}
 				pai->cor='p';
 				avo->cor='v';
-				a = RSD(a,avo);
+				RSD(avo,&a);
 			}
 		}
 		else
@@ -90,13 +120,13 @@ TAluno *corr_ins(TAluno *a, TAluno *z)
 				if(aux==pai->esq)
 				{
 					aux = pai;
-					a = RSD(a,aux);
+					a = RSD(aux,&a);
 					pai = obtemPai(aux);
-					avo = obtemPai(avo);
+					avo = obtemPai(pai);
 				}
 				pai->cor = 'p';
 				avo->cor = 'v';
-				a = RSE(a,avo);
+				RSE(avo,&a);
 			}
 		}
 	}
@@ -104,13 +134,15 @@ TAluno *corr_ins(TAluno *a, TAluno *z)
 	return a;
 }
 
-TAluno* insere(TAluno *a, int elem)
+TAluno* insere(TAluno *a, int mat,float cr, char nome[81])
 {
-	//caso haja o elemento na lista, retorne a propria arvore
-	if(busca(elem,a))return a;
+	//caso haja o matento na lista, retorne a propria arvore
+	if(busca(mat,a))return a;
 	TAluno *novo = (TAluno*)malloc(sizeof(TAluno));
-	novo->mat = elem;
+	novo->mat = mat;
 	novo->esq=novo->dir=NULL;
+	novo->cr= cr;
+	strcpy(novo->nome,nome);
 	if(!a)
 	{
 		novo->cor = 'p';
@@ -121,10 +153,10 @@ TAluno* insere(TAluno *a, int elem)
 	while(x)
 	{
 		w = x;
-		if(x->mat<elem)x=x->dir;
+		if(x->mat<mat)x=x->dir;
 		else x=x->esq;
 	}
-	if(elem < w->mat)
+	if(mat < w->mat)
 		w->esq = novo;
 	else w->dir = novo;
 	novo->pai = w;
@@ -144,8 +176,8 @@ void imprime_aux(TAluno *a, int andar){
   if(a){
       int j;
       imprime_aux(a->esq,andar+1);
-      for(j=0; j<=andar; j++) printf("   ");
-      printf("%d %c\n", a->mat,a->cor);
+      for(j=0; j<=andar; j++) printf("            ");
+      printf("MAT:%d Nome:%s,C:%c\n", a->mat,a->nome,a->cor);
       imprime_aux(a->dir,andar+1);
   }
 }
@@ -156,14 +188,29 @@ void imprime(TAluno *a){
 
 int main(void)
 {
-	int p = 0;
-	TAluno *a = NULL;
-	do
-	{
-		scanf("%d",&p);
-		imprime(a);
-		a = insere(a,p);
-	}while(p != 0);
-	imprime(a);
+	FILE *fp = fopen("teste.txt","r");
+	char buff[30];
+    int mat;
+    float cr;
+    char nome[30];
+    TAluno *a = NULL;
+    int c = 0;
+    while(c < 3){
+        //pega matrícula
+        fscanf(fp, "%s", buff);
+        mat = atoi(buff);
+        //pega cr
+        fscanf(fp, "%s", buff);
+        cr = strtof(buff,NULL);
+        //pega nome
+        fgets(buff, 30, (FILE*)fp);
+        strcpy(nome,buff);
+        //insere na árvore
+        a = insere(a,mat,cr,nome);
+        c++;
+    }
+    fclose(fp);
+    imprime(a);
 	return 0;
 }
+
