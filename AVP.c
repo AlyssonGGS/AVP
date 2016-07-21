@@ -175,7 +175,7 @@ void troca(TAluno*a,TAluno*b){
 	
 }
 
-void *retira(TAluno* a,int ele){
+void retira(TAluno* a,int ele){
 	if(!a) return;
 	
 	TAluno *p = busca(ele,a);
@@ -187,7 +187,7 @@ void *retira(TAluno* a,int ele){
 		
 		troca(p,f);
 		
-		a = retira(a,ele);
+		retira(a,ele);
 	}
 	else{
 		if(p->cor='v'){
@@ -334,7 +334,7 @@ void interface(int maiorMat,TAluno *a)
             case 2:
                 printf("Insira a matricula: ");
                 scanf("%d",&matAux);
-                //remover aqui pela matricula
+				//retira(a,matAux);
                 break;
             case 3:
                 printf("Insira a matricula: ");
@@ -347,7 +347,7 @@ void interface(int maiorMat,TAluno *a)
                 printf("Insira a matricula: ");
                 scanf("%d",&matAux);
                 printf("Insira o novo nome: ");
-                scanf("%s",&nome);
+                scanf("%s",nome);
                 mudaNome(a,matAux,nome);
                 break;
             case 5:
