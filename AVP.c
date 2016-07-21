@@ -26,14 +26,14 @@ void mudaCR(TAluno *a,int mat, float novoCR)
 {
     TAluno *x = busca(mat,a);
     if(x)x->cr = novoCR;
-    else{printf("Aluno não encontrado");}
+    else{printf("Aluno nÃ£o encontrado");}
 }
 
 void mudaNome(TAluno *a, int mat, char novoNome[80])
 {
     TAluno *x = busca(mat,a);
     if(x)strcpy(x->nome,novoNome);
-    else{printf("Aluno não encontrado");}
+    else{printf("Aluno nÃ£o encontrado");}
 }
 void RSE(TAluno *a, TAluno **arvore)
 {
@@ -165,6 +165,98 @@ TAluno* insere(TAluno *a, int mat,float cr, char nome[81])
 	return a;
 }
 
+void troca(TAluno*a,TAluno*b){
+	int temp = a->mat;
+	a->mat = b->mat;
+	b->mat = temp;
+	
+	a->cr = b->cr;
+	strcpy(a->nome,b->nome);
+	
+}
+
+void *retira(TAluno* a,int ele){
+	if(!a) return;
+	
+	TAluno *p = busca(ele,a);
+	if(!p) return;
+	
+	if((p->esq)&&(p->dir)){
+		TAluno* f = p->esq;
+		while(f->dir) f=f->dir;
+		
+		troca(p,f);
+		
+		a = retira(a,ele);
+	}
+	else{
+		if(p->cor='v'){
+			TAluno* temp = p;
+			if(p->esq){
+				p = p->esq;	
+			} 
+			else{
+				p=p->dir;	
+			} 
+			//corrigindo o campo pai dos nos envolvidos na troca
+			if(temp->pai){
+				if(temp->pai->esq == temp) temp->pai->esq = p;
+				else temp->pai->dir = p;
+			}
+			if(!p) p->pai=temp->pai;
+			free(temp);
+		}
+		else{
+			if(p->cor='p'){
+				
+				if((p->esq)&&(p->esq->cor=='v')){
+					p->esq->cor='p'; //pinta filho
+					
+					TAluno* temp = p;
+					p = p->esq;
+					if(temp->pai){
+						if(temp->pai->esq == temp) temp->pai->esq = p;
+						else temp->pai->dir = p;
+					}
+					if(!p) p->pai=temp->pai;					
+					free(temp);
+				}
+				else if((p->dir)&&(p->dir->cor=='v')){
+						p->dir->cor='p'; //pinta filho
+					
+						TAluno* temp = p;
+						p = p->dir;
+						if(temp->pai){
+							if(temp->pai->esq == temp) temp->pai->esq = p;
+							else temp->pai->dir = p;
+						}
+						if(!p) p->pai=temp->pai;					
+						free(temp);
+				}	
+				else{
+					TAluno* temp = p;
+					if(p->esq){
+						p = p->esq;	
+					}	 
+					else{
+						p=p->dir;	
+					} 
+					//corrigindo o campo pai dos nos envolvidos na troca
+					if(temp->pai){
+						if(temp->pai->esq == temp) temp->pai->esq = p;
+						else temp->pai->dir = p;
+					}
+					if(!p) p->pai=temp->pai;
+					free(temp);
+					
+					//continuar com os outros casos
+					//delete_one_child(a);
+				}
+			}
+		}
+	}
+}
+
 TAluno *irmao(TAluno *a)
 {
 	if(a == a->pai->esq)
@@ -218,7 +310,7 @@ void interface(int maiorMat,TAluno *a)
     int mat = maiorMat,matAux,novaMat;
     float cr;
     char nome[80];
-    printf("Insira uma das opções para seguir:\n");
+    printf("Insira uma das opÃ§Ãµes para seguir:\n");
     printf("1-> Inserir aluno\n");
     printf("2-> Remover aluno\n");
     printf("3-> Modificar CR\n");
@@ -278,7 +370,7 @@ void interface(int maiorMat,TAluno *a)
             default:
                 break;
         }
-        printf("Insira uma das opções para seguir:\n");
+        printf("Insira uma das opÃ§Ãµes para seguir:\n");
         printf("1-> Inserir aluno\n");
         printf("2-> Remover aluno\n");
         printf("3-> Modificar CR\n");
@@ -300,7 +392,7 @@ int main(void)
     TAluno *a = NULL;
     int c = 0,maiorMat = 0;
     while(c < 100){
-        //pega matrícula
+        //pega matrÃ­cula
         fscanf(fp, "%s", buff);
         mat = atoi(buff);
         //pega cr
@@ -309,7 +401,7 @@ int main(void)
         //pega nome
         fgets(buff, 30, (FILE*)fp);
         strcpy(nome,buff);
-        //insere na árvore
+        //insere na Ã¡rvore
         a = insere(a,mat,cr,nome);
         c++;
         maiorMat++;
