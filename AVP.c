@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,6 @@ void mudaNome(TAluno *a, int mat, char novoNome[80])
     if(x)strcpy(x->nome,novoNome);
     else{printf("Aluno não encontrado");}
 }
-
 void RSE(TAluno *a, TAluno **arvore)
 {
     TAluno *y = a->dir;
@@ -120,7 +120,7 @@ TAluno *corr_ins(TAluno *a, TAluno *z)
 				if(aux==pai->esq)
 				{
 					aux = pai;
-					a = RSD(aux,&a);
+					RSD(aux,&a);
 					pai = obtemPai(aux);
 					avo = obtemPai(pai);
 				}
@@ -177,7 +177,7 @@ void imprime_aux(TAluno *a, int andar){
       int j;
       imprime_aux(a->esq,andar+1);
       for(j=0; j<=andar; j++) printf("            ");
-      printf("MAT:%d Nome:%s,C:%c\n", a->mat,a->nome,a->cor);
+      printf("MAT:%d C:%c\n", a->mat,a->cor);
       imprime_aux(a->dir,andar+1);
   }
 }
@@ -185,7 +185,105 @@ void imprime_aux(TAluno *a, int andar){
 void imprime(TAluno *a){
   imprime_aux(a, 0);
 }
+void imprime_no(TAluno *a)
+{
+    if(!a) return;
+    printf("Matricula:%d / Nome:%s / CR:%f\n",a->mat,a->nome,a->cr);
+}
+void mudaMatricula(TAluno *a, int mat, int novoMat)
+{
+    TAluno *aux = busca(mat,a);
+    if(busca(novoMat,a))
+    {
+        printf("Matricula invalida\n");
+    }
+    if(aux)
+    {
+        float cr = aux->cr;
+        char nome[80];
+        strcpy(nome,aux->nome);
+        //remove(a,mat);
+        //insere(a,novoMat,cr,nome);
+    }else{printf("Aluno nao encontrado");}
+}
+void interface(int maiorMat,TAluno *a)
+{
+    int op;
+    int mat = maiorMat,matAux,novaMat;
+    float cr;
+    char nome[80];
+    printf("Insira uma das opções para seguir:\n");
+    printf("1-> Inserir aluno\n");
+    printf("2-> Remover aluno\n");
+    printf("3-> Modificar CR\n");
+    printf("4-> Modificar nome\n");
+    printf("5-> Modificar matricula\n");
+    printf("6-> Para imprimir um aluno\n");
+    printf("7-> Para imprimir a estrutura\n");
+    scanf("%d",&op);
+    while(op > 0)
+    {
+        switch(op)
+        {
+            case 1:
+                printf("Insira o nome: ");
+                fgets (nome, 80, stdin);
+                scanf ("%[^\n]%*c", nome);
+                printf("Insira o CR: ");
+                scanf("%f",&cr);
+                insere(a,++mat,cr,nome);
+                break;
+            case 2:
+                printf("Insira a matricula: ");
+                scanf("%d",&matAux);
+                //remover aqui pela matricula
+                break;
+            case 3:
+                printf("Insira a matricula: ");
+                scanf("%d",&matAux);
+                printf("Insira o novo cr: ");
+                scanf("%f",&cr);
+                mudaCR(a,matAux,cr);
+                break;
+            case 4:
+                printf("Insira a matricula: ");
+                scanf("%d",&matAux);
+                printf("Insira o novo nome: ");
+                scanf("%s",&nome);
+                mudaNome(a,matAux,nome);
+                break;
+            case 5:
+                printf("Insira a matricula: ");
+                scanf("%d",&matAux);
+                printf("Insira a nova matricula: ");
+                scanf("%d",&novaMat);
+                mudaMatricula(a,mat,novaMat);
+                break;
 
+            case 6:
+                printf("Insira a matricula: ");
+                scanf("%d",&matAux);
+                TAluno *aux = busca(matAux,a);
+                imprime_no(aux);
+                break;
+            case 7:
+                imprime(a);
+                break;
+            default:
+                break;
+        }
+        printf("Insira uma das opções para seguir:\n");
+        printf("1-> Inserir aluno\n");
+        printf("2-> Remover aluno\n");
+        printf("3-> Modificar CR\n");
+        printf("4-> Modificar nome\n");
+        printf("5-> Modificar matricula\n");
+        printf("6-> Para imprimir um aluno\n");
+        printf("7-> Para imprimir a estrutura\n");
+        printf("0-> Para fechar\n");
+        scanf("%d",&op);
+    }
+}
 int main(void)
 {
 	FILE *fp = fopen("teste.txt","r");
@@ -194,8 +292,8 @@ int main(void)
     float cr;
     char nome[30];
     TAluno *a = NULL;
-    int c = 0;
-    while(c < 3){
+    int c = 0,maiorMat = 0;
+    while(c < 100){
         //pega matrícula
         fscanf(fp, "%s", buff);
         mat = atoi(buff);
@@ -208,9 +306,11 @@ int main(void)
         //insere na árvore
         a = insere(a,mat,cr,nome);
         c++;
+        maiorMat++;
     }
     fclose(fp);
-    imprime(a);
+    //imprime(a);
+    interface(maiorMat,a);
 	return 0;
 }
 
