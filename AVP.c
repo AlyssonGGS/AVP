@@ -190,12 +190,13 @@ void imprime_no(TAluno *a)
     if(!a) return;
     printf("Matricula:%d / Nome:%s / CR:%f\n",a->mat,a->nome,a->cr);
 }
-void mudaMatricula(TAluno *a, int mat, int novoMat)
+int mudaMatricula(TAluno *a, int mat, int novoMat)
 {
     TAluno *aux = busca(mat,a);
     if(busca(novoMat,a))
     {
         printf("Matricula invalida\n");
+        return 0;
     }
     if(aux)
     {
@@ -204,7 +205,12 @@ void mudaMatricula(TAluno *a, int mat, int novoMat)
         strcpy(nome,aux->nome);
         //remove(a,mat);
         //insere(a,novoMat,cr,nome);
-    }else{printf("Aluno nao encontrado");}
+        return 1;
+    }else
+    {
+        printf("Aluno nao encontrado");
+        return 0;
+    }
 }
 void interface(int maiorMat,TAluno *a)
 {
@@ -257,7 +263,7 @@ void interface(int maiorMat,TAluno *a)
                 scanf("%d",&matAux);
                 printf("Insira a nova matricula: ");
                 scanf("%d",&novaMat);
-                mudaMatricula(a,mat,novaMat);
+                mat += mudaMatricula(a,mat,novaMat);
                 break;
 
             case 6:
