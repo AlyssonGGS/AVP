@@ -165,39 +165,57 @@ TAluno* insere(TAluno *a, int mat,float cr, char nome[81])
 	return a;
 }
 
-void troca(TAluno*a,TAluno*b){
-	int temp = a->mat;
-	a->mat = b->mat;
-	b->mat = temp;
-	
-	a->cr = b->cr;
-	strcpy(a->nome,b->nome);
-	
+void troca(TAluno*a,TAluno*b)
+{
+    int temp = a->mat;
+    float tempCR = a->cr;
+    char tempNome[80];
+    strcpy(tempNome,a->nome);
+
+    a->mat = b->mat;
+    a->cr = b->cr;
+    strcpy(a->nome,b->nome);
+
+    b->mat = temp;
+    b->cr = tempCR;
+    strcpy(b->nome,tempNome);
 }
 
-void retira(TAluno* a,int ele){
+void troca_no(TAluno*a,TAluno*b)
+{
+     if(a->pai){
+        if(a->pai->dir == a)
+            a->pai->dir = b;
+        else
+            a->pai->esq = b;
+    }
+    if(!b)return;
+    b->pai = a->pai;
+}
+
+/*void retira(TAluno* a,int ele){
 	if(!a) return;
-	
+
 	TAluno *p = busca(ele,a);
 	if(!p) return;
-	
+
 	if((p->esq)&&(p->dir)){
 		TAluno* f = p->esq;
 		while(f->dir) f=f->dir;
-		
+
 		troca(p,f);
-		
+
 		retira(a,ele);
 	}
 	else{
 		if(p->cor='v'){
 			TAluno* temp = p;
 			if(p->esq){
-				p = p->esq;	
-			} 
+				p = p->esq;
+			}
 			else{
-				p=p->dir;	
-			} 
+				p=p->dir;
+			}
 			//corrigindo o campo pai dos nos envolvidos na troca
 			if(temp->pai){
 				if(temp->pai->esq == temp) temp->pai->esq = p;
@@ -208,39 +226,39 @@ void retira(TAluno* a,int ele){
 		}
 		else{
 			if(p->cor='p'){
-				
+
 				if((p->esq)&&(p->esq->cor=='v')){
 					p->esq->cor='p'; //pinta filho
-					
+
 					TAluno* temp = p;
 					p = p->esq;
 					if(temp->pai){
 						if(temp->pai->esq == temp) temp->pai->esq = p;
 						else temp->pai->dir = p;
 					}
-					if(!p) p->pai=temp->pai;					
+					if(!p) p->pai=temp->pai;
 					free(temp);
 				}
 				else if((p->dir)&&(p->dir->cor=='v')){
 						p->dir->cor='p'; //pinta filho
-					
+
 						TAluno* temp = p;
 						p = p->dir;
 						if(temp->pai){
 							if(temp->pai->esq == temp) temp->pai->esq = p;
 							else temp->pai->dir = p;
 						}
-						if(!p) p->pai=temp->pai;					
+						if(!p) p->pai=temp->pai;
 						free(temp);
-				}	
+				}
 				else{
 					TAluno* temp = p;
 					if(p->esq){
-						p = p->esq;	
-					}	 
+						p = p->esq;
+					}
 					else{
-						p=p->dir;	
-					} 
+						p=p->dir;
+					}
 					//corrigindo o campo pai dos nos envolvidos na troca
 					if(temp->pai){
 						if(temp->pai->esq == temp) temp->pai->esq = p;
@@ -248,15 +266,147 @@ void retira(TAluno* a,int ele){
 					}
 					if(!p) p->pai=temp->pai;
 					free(temp);
-					
+
 					//continuar com os outros casos
 					//delete_one_child(a);
 				}
 			}
 		}
 	}
+}*/
+TAluno *minimo(TAluno *a)
+{
+    TAluno *aux = a;
+    while(aux->esq)
+    {
+       aux = aux->esq;
+    }
+    return aux;
+}
+TAluno *sucessor(TAluno *a)
+{
+    TAluno *s;
+    if(a->dir) return minimo(a->dir);
+    s = a->pai;
+    while(s && s->dir)
+    {
+        s = s->pai;
+    }
+    return s;
 }
 
+void remove_um_filho(TAluno *a,TAluno *t)
+{
+     TAluno *filho = a->dir ? a->esq : a->dir;
+      if (a->cor == 'p') {
+      if (filho && filho->cor == 'v')
+       filho->cor = 'p';
+      else
+       delete_case1(filho,&t);
+     }
+     troca_no(a, filho);
+     free(a);
+}
+void delete_case1(TAluno *a,TAluno **t)
+{
+     if (a->pai!= NULL)
+      delete_case2(a,t);
+}
+void delete_case2(TAluno *a,TAluno **t)
+{
+     TAluno *irmao = irmao(a);
+
+     if (irmao->cor == 'v') {
+      a->pai->cor = 'v';
+      a->cor = 'p';
+      if (a == a->pai->esq)
+       RSE(a->pai,t);
+      else
+       RSD(a->pai,t);
+     }
+     delete_case3(a,t);
+}
+
+void delete_case3(TAluno *a,TAluno **t)
+{
+     TAluno *irmao = irmao(a);
+
+     if ((a->pai->cor == 'p') &&
+         (!irmao || irmao->cor == 'p') &&
+         (!irmao->esq || irmao->esq->cor == 'p') &&
+         (!irmao->dir || irmao->irmao->cor == 'p')) {
+        irmao->cor= 'v';
+        delete_case1(a->pai,t);
+     } else
+      delete_case4(a,t);
+}
+void delete_case4(TAluno *a,TAluno **t)
+{
+    TAluno *irmao = irmao(a);
+
+    if ((a->pai->cor == 'v') &&
+         (!irmao || irmao->cor == 'p') &&
+         (!irmao->esq || irmao->esq->cor == 'p') &&
+         (!irmao->dir || irmao->dir->cor == 'p')) {
+        irmao->cor = 'v';
+        a->pai->cor = 'p';
+    } else
+    delete_case5(a,t);
+}
+void delete_case5(TAluno *a,TAluno **t)
+{
+    TAluno *irmao = irmao(a);
+
+    if  (!irmao || irmao->cor == 'p') {
+        if ((a == a->pai->esq) &&
+            (!irmao->dir || irmao->dir->cor == 'p') &&
+            (irmao->esq && irmao->esq->cor == 'v')) { /* this last test is trivial too due to cases 2-4. */
+                irmao->cor = 'v';
+                irmao->esq->cor = 'p';
+                RSD(irmao,t);
+        } else if ((a == a->pai->dir) &&
+                 (!irmao->esq || irmao->esq->cor == 'p') &&
+                 (irmao->dir  && irmao->dir->cor == 'v')) {/* this last test is trivial too due to cases 2-4. */
+                    irmao->cor = 'v';
+                    irmao->dir->cor = 'p';
+                    RSE(irmao,t);
+        }
+    }
+    delete_case6(a,t);
+}
+void delete_case6(TAluno *a,TAluno **t)
+{
+    TAluno *irmao = irmao(a);
+
+    irmao->cor = a->pai->cor;
+    a->pai->cor = 'p';
+
+    if (a == a->pai->esq)
+        if(irmao->dir)
+            irmao->dir->cor = 'p';
+        RSE(a->pai,t);
+        } else {
+        if(irmao->esq)
+            irmao->esq->cor = 'p';
+        rRSD(a->pai,t);
+    }
+}
+
+void retira(TAluno *a, int mat)
+{
+    TAluno *aux = busca(mat,a);
+    if(aux)
+    {
+        if(aux->dir && aux->esq)
+        {
+            TAluno *g = aux->esq;
+            while(g->dir) g=g->dir;
+            troca(aux,g);
+        }
+
+        delete_case1(g,a);
+    }
+}
 TAluno *irmao(TAluno *a)
 {
 	if(a == a->pai->esq)
@@ -334,7 +484,7 @@ void interface(int maiorMat,TAluno *a)
             case 2:
                 printf("Insira a matricula: ");
                 scanf("%d",&matAux);
-				//retira(a,matAux);
+				retira(a,matAux);
                 break;
             case 3:
                 printf("Insira a matricula: ");
@@ -347,7 +497,8 @@ void interface(int maiorMat,TAluno *a)
                 printf("Insira a matricula: ");
                 scanf("%d",&matAux);
                 printf("Insira o novo nome: ");
-                scanf("%s",nome);
+                fgets (nome, 80, stdin);
+                scanf ("%[^\n]%*c", nome);
                 mudaNome(a,matAux,nome);
                 break;
             case 5:
