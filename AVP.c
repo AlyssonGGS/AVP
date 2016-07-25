@@ -416,7 +416,8 @@ void retira(TAluno *a, int mat)
             troca(aux,g);
         }
 
-        delete_case1(g,a);
+        //delete_case1(g,a);
+        remove_um_filho(g,a);
     }
 }
 
