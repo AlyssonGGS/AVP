@@ -548,7 +548,7 @@ int main(void)
     float cr;
     char nome[30];
     TAluno *a = NULL;
-    int c = 0,maiorMat = 0;
+    int maiorMat = 0;
     do{
         //pega matrícula
         fscanf(fp, "%s", buff);
@@ -561,7 +561,6 @@ int main(void)
         strcpy(nome,buff);
         //insere na árvore
         a = insere(a,mat,cr,nome);
-        c++;
         maiorMat++;
     }while(getchar() != EOF)
     fclose(fp);
