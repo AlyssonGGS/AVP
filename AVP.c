@@ -307,12 +307,12 @@ TAluno *sucessor(TAluno *a)
 
 void remove_um_filho(TAluno *a,TAluno *t)
 {
-     TAluno *filho = a->dir ? a->esq : a->dir;
+     TAluno *filho = a->dir ? a->dir : a->esq;
       if (a->cor == 'p') {
       if (filho && filho->cor == 'v')
        filho->cor = 'p';
       else
-       delete_case1(filho,&t);
+       delete_case1(a,&t);
      }
      troca_no(a, filho);
      free(a);
@@ -320,7 +320,7 @@ void remove_um_filho(TAluno *a,TAluno *t)
 void delete_case1(TAluno *a,TAluno **t)
 {
      if (a->pai!= NULL)
-      delete_case2(a,t);
+        delete_case2(a,t);
 }
 void delete_case2(TAluno *a,TAluno **t)
 {
@@ -549,7 +549,7 @@ int main(void)
     char nome[30];
     TAluno *a = NULL;
     int c = 0,maiorMat = 0;
-    while(c < 4){
+    while(c < 100){
         //pega matrícula
         fscanf(fp, "%s", buff);
         mat = atoi(buff);
