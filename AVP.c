@@ -549,7 +549,7 @@ int main(void)
     char nome[30];
     TAluno *a = NULL;
     int c = 0,maiorMat = 0;
-    while(c < 100){
+    do{
         //pega matrícula
         fscanf(fp, "%s", buff);
         mat = atoi(buff);
@@ -563,7 +563,7 @@ int main(void)
         a = insere(a,mat,cr,nome);
         c++;
         maiorMat++;
-    }
+    }while(getchar() != EOF)
     fclose(fp);
     //imprime(a);
     interface(maiorMat,a);
