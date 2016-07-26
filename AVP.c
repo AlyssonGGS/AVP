@@ -71,7 +71,7 @@ void RSD(TAluno *a, TAluno **arvore)
         else a->pai->esq = y;
     }
     y->dir = a;
-    a->esq = y;
+    a->pai = y;
 }
 
 TAluno *corr_ins(TAluno *a, TAluno *z)
@@ -188,6 +188,9 @@ void troca_no(TAluno*a,TAluno*b)
             a->pai->dir = b;
         else
             a->pai->esq = b;
+    }else
+    {
+        troca(a,b);
     }
     if(!b)return;
     b->pai = a->pai;
@@ -195,95 +198,14 @@ void troca_no(TAluno*a,TAluno*b)
 
 TAluno *irmao(TAluno *a)
 {
-    if(a){
+    if(!a || !a->pai) return NULL;
+    else{
         if(a == a->pai->esq)
             return a->pai->dir;
         return a->pai->esq;
     }
-    else return NULL;
 }
 
-/*void retira(TAluno* a,int ele){
-	if(!a) return;
-
-	TAluno *p = busca(ele,a);
-	if(!p) return;
-
-	if((p->esq)&&(p->dir)){
-		TAluno* f = p->esq;
-		while(f->dir) f=f->dir;
-
-		troca(p,f);
-
-		retira(a,ele);
-	}
-	else{
-		if(p->cor='v'){
-			TAluno* temp = p;
-			if(p->esq){
-				p = p->esq;
-			}
-			else{
-				p=p->dir;
-			}
-			//corrigindo o campo pai dos nos envolvidos na troca
-			if(temp->pai){
-				if(temp->pai->esq == temp) temp->pai->esq = p;
-				else temp->pai->dir = p;
-			}
-			if(!p) p->pai=temp->pai;
-			free(temp);
-		}
-		else{
-			if(p->cor='p'){
-
-				if((p->esq)&&(p->esq->cor=='v')){
-					p->esq->cor='p'; //pinta filho
-
-					TAluno* temp = p;
-					p = p->esq;
-					if(temp->pai){
-						if(temp->pai->esq == temp) temp->pai->esq = p;
-						else temp->pai->dir = p;
-					}
-					if(!p) p->pai=temp->pai;
-					free(temp);
-				}
-				else if((p->dir)&&(p->dir->cor=='v')){
-						p->dir->cor='p'; //pinta filho
-
-						TAluno* temp = p;
-						p = p->dir;
-						if(temp->pai){
-							if(temp->pai->esq == temp) temp->pai->esq = p;
-							else temp->pai->dir = p;
-						}
-						if(!p) p->pai=temp->pai;
-						free(temp);
-				}
-				else{
-					TAluno* temp = p;
-					if(p->esq){
-						p = p->esq;
-					}
-					else{
-						p=p->dir;
-					}
-					//corrigindo o campo pai dos nos envolvidos na troca
-					if(temp->pai){
-						if(temp->pai->esq == temp) temp->pai->esq = p;
-						else temp->pai->dir = p;
-					}
-					if(!p) p->pai=temp->pai;
-					free(temp);
-
-					//continuar com os outros casos
-					//delete_one_child(a);
-				}
-			}
-		}
-	}
-}*/
 TAluno *minimo(TAluno *a)
 {
     TAluno *aux = a;
@@ -296,7 +218,7 @@ TAluno *minimo(TAluno *a)
 TAluno *sucessor(TAluno *a)
 {
     TAluno *s;
-    if(a->dir) return minimo(a->dir);
+    if(a->esq) return minimo(a->esq);
     s = a->pai;
     while(s && s->dir)
     {
@@ -304,65 +226,26 @@ TAluno *sucessor(TAluno *a)
     }
     return s;
 }
-
-void remove_um_filho(TAluno *a,TAluno *t)
-{
-     TAluno *filho = a->dir ? a->dir : a->esq;
-      if (a->cor == 'p') {
-      if (filho && filho->cor == 'v')
-       filho->cor = 'p';
-      else
-       delete_case1(a,&t);
-     }
-     troca_no(a, filho);
-     free(a);
-}
-void delete_case1(TAluno *a,TAluno **t)
-{
-     if (a->pai!= NULL)
-        delete_case2(a,t);
-}
-void delete_case2(TAluno *a,TAluno **t)
-{
-     TAluno *i = irmao(a);
-
-     if (i && i->cor == 'v') {
-      a->pai->cor = 'v';
-      i->cor = 'p';
-      if (a == a->pai->esq)
-       RSE(a->pai,t);
-      else
-       RSD(a->pai,t);
-     }
-     delete_case3(a,t);
-}
-
-void delete_case3(TAluno *a,TAluno **t)
-{
-     TAluno *i = irmao(a);
-
-     if ((a->pai->cor == 'p') &&
-         (!i || i->cor == 'p') &&
-         (i && (!i->esq || i->esq->cor == 'p')) &&
-         (i && (!i->dir || i->dir->cor == 'p'))) {
-        i->cor= 'v';
-        delete_case1(a->pai,t);
-     } else
-      delete_case4(a,t);
-}
-void delete_case4(TAluno *a,TAluno **t)
+void delete_case1(TAluno *a,TAluno **t);
+void delete_case6(TAluno *a,TAluno **t)
 {
     TAluno *i = irmao(a);
 
-    if ((a->pai->cor == 'v') &&
-         (!i || i->cor == 'p') &&
-         (!i->esq || i->esq->cor == 'p') &&
-         (!i->dir || i->dir->cor == 'p')) {
-        i->cor = 'v';
-        a->pai->cor = 'p';
-    } else
-    delete_case5(a,t);
+    if(i)
+        i->cor = a->pai->cor;
+    a->pai->cor = 'p';
+
+    if (a == a->pai->esq){
+        if(i && i->dir)
+            i->dir->cor = 'p';
+        RSE(a->pai,t);
+    } else {
+        if(i && i->esq)
+            i->esq->cor = 'p';
+        RSD(a->pai,t);
+    }
 }
+
 void delete_case5(TAluno *a,TAluno **t)
 {
     TAluno *i = irmao(a);
@@ -384,32 +267,75 @@ void delete_case5(TAluno *a,TAluno **t)
     }
     delete_case6(a,t);
 }
-void delete_case6(TAluno *a,TAluno **t)
+
+void delete_case4(TAluno *a,TAluno **t)
 {
     TAluno *i = irmao(a);
 
-    if(i)
-        i->cor = a->pai->cor;
-    a->pai->cor = 'p';
-
-    if (a == a->pai->esq){
-        if(i && i->dir)
-            i->dir->cor = 'p';
-        RSE(a->pai,t);
-    } else {
-        if(i && i->esq)
-            i->esq->cor = 'p';
-        RSD(a->pai,t);
-    }
+    if ((a->pai->cor == 'v') &&
+         (!i || i->cor == 'p') &&
+         (!i->esq || i->esq->cor == 'p') &&
+         (!i->dir || i->dir->cor == 'p')) {
+        i->cor = 'v';
+        a->pai->cor = 'p';
+    } else
+    delete_case5(a,t);
 }
 
+void delete_case3(TAluno *a,TAluno **t)
+{
+     TAluno *i = irmao(a);
+
+     if ((a->pai->cor == 'p') &&
+         (!i || i->cor == 'p') &&
+         (i && (!i->esq || i->esq->cor == 'p')) &&
+         (i && (!i->dir || i->dir->cor == 'p'))) {
+        i->cor= 'v';
+        delete_case1(a->pai,t);
+     } else
+      delete_case4(a,t);
+}
+
+void delete_case2(TAluno *a,TAluno **t)
+{
+     TAluno *i = irmao(a);
+
+     if (i && i->cor == 'v') {
+      a->pai->cor = 'v';
+      i->cor = 'p';
+      if (a == a->pai->esq)
+       RSE(a->pai,t);
+      else
+       RSD(a->pai,t);
+     }
+     delete_case3(a,t);
+}
+
+void delete_case1(TAluno *a,TAluno **t)
+{
+     if (a->pai!= NULL)
+        delete_case2(a,t);
+}
+
+void remove_um_filho(TAluno *a,TAluno *t)
+{
+     TAluno *filho = a->dir ? a->dir : a->esq;
+      if (a->cor == 'p') {
+      if (filho && filho->cor == 'v')
+       filho->cor = 'p';
+      else
+       delete_case1(a,&t);
+     }
+     troca_no(a, filho);
+     free(a);
+}
 void retira(TAluno *a, int mat)
 {
     TAluno *aux = busca(mat,a);
     TAluno *g=aux;
     if(aux)
     {
-        if(aux->dir && aux->esq)
+        if(aux->esq)
         {
             g = aux->esq;
             while(g->dir) g=g->dir;
@@ -443,17 +369,18 @@ int mudaMatricula(TAluno *a, int mat, int novoMat)
 {
     TAluno *aux = busca(mat,a);
     if(busca(novoMat,a))
-    {
+    {6
         printf("Matricula invalida\n");
         return 0;
     }
     if(aux)
     {
+        printf("%s",a->nome);
         float cr = aux->cr;
         char nome[80];
         strcpy(nome,aux->nome);
-        //remove(a,mat);
-        //insere(a,novoMat,cr,nome);
+        retira(a,mat);
+        insere(a,novoMat,cr,nome);
         return 1;
     }else
     {
@@ -562,7 +489,7 @@ int main(void)
         //insere na árvore
         a = insere(a,mat,cr,nome);
         maiorMat++;
-    }while(getchar() != EOF)
+    }while(maiorMat < 10);// && maiorMat < 5);
     fclose(fp);
     //imprime(a);
     interface(maiorMat,a);
